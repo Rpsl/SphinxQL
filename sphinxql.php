@@ -28,6 +28,14 @@
 					// sphinx-specific, check their docs
 			$result = $query->execute();
 
+			$stats = $sphinx->stats();
+
+			// ------
+
+			$sphinxql = new SphinxQL();
+
+			$result = $sphinxql->query('INSERT INTO realtime_index (id, title, content) VALUES ( 1, "title news", "content news" )');
+
 	*/
 
 
@@ -136,29 +144,35 @@
 			return FALSE;
 		}
 
+		/**
+		 * Get stats of last query.
+		 *
+		 * @param string|null A name of param
+		 *
+		 * @return array|string|FALSE
+		 */
+
 		public function stats( $value = NULL )
 		{
 
-			//проверяем данные статистики
-			//если она обнулена то делаем запрос к Sphinx и заполняем ее
-			//иначе возвращаем уже имеющиеся значения
-			if ( count( $this->stats ) == 0 )
-			{
-				$data = $this->query( 'SHOW META' );
+			$data = $this->query( 'SHOW META' );
 
-				if ( empty( $data ) )
-				{
-					return FALSE;
-				}
-				foreach ( $data as $v )
-				{
-					$this->stats[$v['Variable_name']] = $v['Value'];
-				}
+			if ( empty( $data ) )
+			{
+				return FALSE;
 			}
-			//если запрашивается конкретное поле
+
+			$this->stats = array();
+
+			foreach ( $data as $v )
+			{
+				$this->stats[ $v['Variable_name'] ] = $v['Value'];
+			}
+
+			// РµСЃР»Рё Р·Р°РїСЂР°С€РёРІР°РµС‚СЃСЏ РєРѕРЅРєСЂРµС‚РЅРѕРµ РїРѕР»Рµ
 			if ( $value != NULL )
 			{
-				//возвращаем поле из массива статистики
+				// РІРѕР·РІСЂР°С‰Р°РµРј РїРѕР»Рµ РёР· РјР°СЃСЃРёРІР° СЃС‚Р°С‚РёСЃС‚РёРєРё
 				if ( isset( $this->stats[$value] ) )
 				{
 					return $this->stats[$value];
