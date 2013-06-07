@@ -1,7 +1,7 @@
 SphinxQL
 ========
 
-Class for work with Spinx QL Api ( use mysqli ).
+A library for work with [Spinx](http://sphinxsearch.com/) QL Api ( use mysqli ).
 
 ##### Example
 
