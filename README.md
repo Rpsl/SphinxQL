@@ -30,27 +30,25 @@ $query
     // field, value, operator='=', quote=TRUE
     ->whereIn('tags_i_need', array(1, 2, 3), 'all')
     ->whereIn('tags_i_do_not_want', array(4, 5, 6), 'none')
+    
+    // field, array values, type='any'
     ->whereIn('tags_i_would_like_one_of', array(7, 8, 9), 'any')
 
 
-    // field, array values, type='any'
+    // field, sort='desc'
     ->order('@weight', 'desc')
 
-
-    // field, sort='desc'
+    // defaults are 0 and 20, same as the sphinx defaults
     ->offset(10)->limit(50)
 
-
-    // defaults are 0 and 20, same as the sphinx defaults
+    // option name, option value
     ->option('max_query_time', '100')
 
-
-    // option name, option value
     ->groupBy('field')
+    
+    // sphinx-specific, check their docs
     ->in_group_order_by('another_field', 'desc');
 
-
-    // sphinx-specific, check their docs
     $result = $query->execute();
 
 
