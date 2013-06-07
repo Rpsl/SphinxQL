@@ -5,8 +5,7 @@ A library for work with [SpinxQL](http://sphinxsearch.com/) Api ( uses mysqli ph
 
 See [SphinxQL specification](http://sphinxsearch.com/docs/current.html#sphinxql-reference)
 
-##### Example
-
+##### Example:
 ```php
 
 $sphinxql = new SphinxQL();
@@ -58,8 +57,7 @@ $query
     $stats = $sphinx->stats();
 ```
 
-##### Example with RT Index
-
+##### Example with RT Index:
 ```php
 $sphinxql = new SphinxQL();
 
