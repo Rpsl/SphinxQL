@@ -13,7 +13,14 @@ $query
     ->addIndex('my_index')
     ->addField('field_name', 'alias')
     ->addField('another_field')
-    ->addFields(array(array('field' => 'title', 'alias' => 'title_alias'), array('field' => 'user_id')))
+
+    ->addFields(
+        array(
+            array('field' => 'title', 'alias' => 'title_alias'),
+            array('field' => 'user_id')
+        )
+    )
+
     ->search('some words to search for')
 
     // string (is given directly to sphinx, so can contain @field directives)
@@ -56,5 +63,11 @@ $query
 ```php
 $sphinxql = new SphinxQL();
 
-$result = $sphinxql->query('INSERT INTO realtime_index (id, title, content) VALUES ( 1, "title news", "content news" )');
+$result = $sphinxql->query('
+    INSERT INTO realtime_index
+        (id, title, content)
+    VALUES
+        ( 1, "title news", "content news" )
+    '
+);
 ```
