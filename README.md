@@ -50,11 +50,11 @@ $query
     // sphinx-specific, check their docs
     ->in_group_order_by('another_field', 'desc');
 
-    $result = $query->execute();
+$result = $query->execute();
 
 
-    // get stats
-    $stats = $sphinx->stats();
+// get stats
+$stats = $sphinx->stats();
 ```
 
 ##### Example with RT Index:
