@@ -28,7 +28,7 @@
 					// sphinx-specific, check their docs
 			$result = $query->execute();
 
-			$stats = $sphinx->stats();
+            $stats = $sphinx->stats();
 
 			// ------
 
@@ -36,7 +36,10 @@
 
 			$result = $sphinxql->query('INSERT INTO realtime_index (id, title, content) VALUES ( 1, "title news", "content news" )');
 
-	*/
+
+			@todo Нужно отрефакторить на вопрос работы с несколькими соединениями
+	            и выкидывания различных Exception`ов при неправильном запросе.
+ 	*/
 
 
 	class SphinxQL
@@ -46,8 +49,6 @@
 		 * @var array A collection of SphinxQL_Clients
 		 */
 		protected static $_handles = array();
-
-		private $stats = array();
 
 		/**
 		 * Constructor
@@ -119,6 +120,8 @@
 		 * @param SphinxQL_Query|string A query as a string or a SphinxQL_Query object
 		 *
 		 * @return array|FALSE The result of the query or FALSE
+		 *
+		 * @throws SphinxqlQueryException Если при выполнении запроса возникла ошибка.
 		 */
 		public function query( $query )
 		{
@@ -128,33 +131,38 @@
 			}
 			while ( ( $names = array_keys( self::$_handles ) ) && count( $names ) && ( $name = $names[intval( rand( 0, count( $names ) - 1 ) )] ) )
 			{
+				#d( (string) $query );
 				$client = self::$_handles[$name];
-				$return = $client->query( (string) $query )->fetch_all();
 
-				if ( is_array( $return ) )
+				try
 				{
-					return $return;
+					$return = $client->query( (string) $query )->fetch_all();
 				}
-				else
+				catch(SphinxqlConnectException $e)
 				{
+					// Ошибка соединения
+					error_log( error_to_string_short($e) );
 					unset( self::$_handles[$name] );
+
+					continue;
 				}
+
+				return $return;
 			}
 
+			// Если ни одно соединение не является успешным.
 			return FALSE;
 		}
 
 		/**
-		 * Get stats of last query.
+		 * Получение статистики по результатам запроса.
+		 * Если передан параметр $value, то возвращается только значение запрошенного параметра.
 		 *
-		 * @param string|null A name of param
-		 *
-		 * @return array|string|FALSE
+		 * @param string $value
+		 * @return array|string|boolean|null
 		 */
-
 		public function stats( $value = NULL )
 		{
-
 			$data = $this->query( 'SHOW META' );
 
 			if ( empty( $data ) )
@@ -162,20 +170,19 @@
 				return FALSE;
 			}
 
-			$this->stats = array();
-
+			$stats = array();
 			foreach ( $data as $v )
 			{
-				$this->stats[ $v['Variable_name'] ] = $v['Value'];
+				$stats[$v['Variable_name']] = $v['Value'];
 			}
 
-			// если запрашивается конкретное поле
+			//если запрашивается конкретное поле
 			if ( $value != NULL )
 			{
-				// возвращаем поле из массива статистики
-				if ( isset( $this->stats[$value] ) )
+				//возвращаем поле из массива статистики
+				if ( isset( $stats[$value] ) )
 				{
-					return $this->stats[$value];
+					return $stats[$value];
 				}
 				else
 				{
@@ -184,7 +191,7 @@
 			}
 			else
 			{
-				return $this->stats;
+				return $stats;
 			}
 
 		}
@@ -214,7 +221,7 @@
 		/**
 		 * Constructor
 		 *
-		 * @param string The address and port of a sphinx server
+		 * @param string $server The address and port of a sphinx server
 		 */
 		public function __construct( $server )
 		{
@@ -229,6 +236,8 @@
 		/**
 		 * Used to attempt connection to the sphinx server, keeps a record of whether it failed to connect or not
 		 *
+		 * @throws SphinxqlConnectException
+		 *
 		 * @return boolean Status of the connection attempt
 		 */
 		protected function connect()
@@ -240,7 +249,7 @@
 			}
 			if ( $this->_failed )
 			{
-				return FALSE;
+				throw new SphinxqlConnectException('Connection already failed for server : ' . $this->_server);
 			}
 			if ( $this->_server === FALSE )
 			{
@@ -254,7 +263,7 @@
 			catch ( Exception $e )
 			{
 				$this->_failed = TRUE;
-				return FALSE;
+				throw new SphinxqlConnectException($e->getMessage());
 			}
 			return TRUE;
 		}
@@ -262,9 +271,11 @@
 		/**
 		 * Perform a query
 		 *
-		 * @param string The query to perform
+		 * @param string $query to perform
 		 *
 		 * @return SphinxQL_Client This client object
+		 *
+		 * @throws SphinxqlQueryException Если при выполнении запроса возникла ошибка.
 		 */
 		public function query( $query )
 		{
@@ -274,6 +285,12 @@
 			{
 				#d( $query );
 				$this->_result = mysqli_query( $this->_handle, $query );
+
+				if( $this->_result === FALSE )
+				{
+					$error = mysqli_error($this->_handle);
+					throw new SphinxqlQueryException($error);
+				}
 			}
 			return $this;
 		}
@@ -281,9 +298,9 @@
 		/**
 		 * Fetch one row of the result set
 		 *
-		 * @return array|FALSE The row or an error
+		 * @return array|boolean The row or an error
 		 */
-		public function fetchRow()
+		public function fetch_row()
 		{
 
 			if ( $this->_result === FALSE )
@@ -300,11 +317,10 @@
 		/**
 		 * Fetch the whole result set
 		 *
-		 * @return array|FALSE The results or an error
+		 * @return array|boolean The results or an error
 		 */
-		public function fetchAll()
+		public function fetch_all()
 		{
-
 			if ( $this->_result === FALSE )
 			{
 				return FALSE;
@@ -798,7 +814,8 @@
 		 */
 		public function removeGroupBy( $field )
 		{
-
+			unset( $field );
+			// :TODO: тут надо допилить до полной поддержки group by
 			$this->_group = NULL;
 
 			return $this;
@@ -860,8 +877,8 @@
 		/**
 		 * Adds an OPTION to the query. This is a Sphinx-specific extension to SQL.
 		 *
-		 * @param string The option name
-		 * @param string The option value
+		 * @param string $name  The option name
+		 * @param string $value The option value
 		 *
 		 * @return SphinxQL_Query $this
 		 */
@@ -879,8 +896,8 @@
 		/**
 		 * Removes an OPTION from the query.
 		 *
-		 * @param string The option name
-		 * @param string The option value, optional
+		 * @param string $name  The option name
+		 * @param string $value The option value, optional
 		 *
 		 * @return SphinxQL_Query $this
 		 */
@@ -912,12 +929,43 @@
 		/**
 		 * Executes the query and returns the results
 		 *
+		 * @param bool $dump ( Dump SphinxQL query )
+		 *
 		 * @return array Results of the query
 		 */
-		public function execute()
+		public function execute( $dump = FALSE )
 		{
+
+			if( $dump )
+			{
+				if( function_exists('d') )
+				{
+					d( (string) $this );
+				}
+				else
+				{
+					error_log( (string) $this );
+				}
+			}
+
 			return $this->_sphinx->query( $this );
 		}
 
+	}
+
+	class SphinxqlConnectException extends Exception{
+
+		public function __construct($message)
+		{
+			parent::__construct($message);
+		}
+	}
+
+	class SphinxqlQueryException extends Exception{
+
+		public function __construct($message)
+		{
+			parent::__construct($message);
+		}
 	}
 
