@@ -52,9 +52,10 @@
 
 		/**
 		 * Constructor
-		 *
-		 * @throws Exception
-		 * @param array  Config servers
+         *
+		 * @param array $servers ( array( 'alias' => '127.0.0.1:9306' ) )
+         *
+         * @throws Exception
 		 */
 		public function __construct( array $servers )
 		{
@@ -73,8 +74,8 @@
 		/**
 		 * Create a new SphinxQL_Client for a server and add it to the pool of clients
 		 *
-		 * @param string An alias for this server
-		 * @param string The address and port of a server
+		 * @param string $name      An alias for this server
+		 * @param string $server    The address and port of a server
 		 *
 		 * @return boolean The status of the creation of the SphinxQL_Client
 		 */
@@ -100,7 +101,7 @@
 		/**
 		 * Create a new SphinxQL_Query, automatically add this SphinxQL as the constructor argument
 		 *
-		 * @return SphinxQL_Query|FALSE The resulting query or FALSE on error
+		 * @return SphinxQL_Query|bool The resulting query or FALSE on error
 		 */
 		public function newQuery()
 		{
@@ -119,7 +120,7 @@
 		 *
 		 * @param SphinxQL_Query|string A query as a string or a SphinxQL_Query object
 		 *
-		 * @return array|FALSE The result of the query or FALSE
+		 * @return array|bool The result of the query or FALSE
 		 *
 		 * @throws SphinxqlQueryException Если при выполнении запроса возникла ошибка.
 		 */
@@ -131,8 +132,10 @@
 			}
 			while ( ( $names = array_keys( self::$_handles ) ) && count( $names ) && ( $name = $names[intval( rand( 0, count( $names ) - 1 ) )] ) )
 			{
-				#d( (string) $query );
-				$client = self::$_handles[$name];
+                /**
+                 * @var mysqli
+                 */
+                $client = self::$_handles[$name];
 
 				try
 				{
@@ -141,7 +144,7 @@
 				catch(SphinxqlConnectException $e)
 				{
 					// Ошибка соединения
-					error_log( error_to_string_short($e) );
+					error_log( var_export($e,1) );
 					unset( self::$_handles[$name] );
 
 					continue;
@@ -206,15 +209,16 @@
 		 */
 		protected $_server = FALSE;
 		/**
-		 * @var resource A reference to the mysql link that this client will be using
+         * @var Mysqli ( resource A reference to the mysql link that this client will be using )
 		 */
 		protected $_handle = FALSE;
 		/**
 		 * @var boolean A flag to denote whether or not this client has tried to connect and failed
 		 */
 		protected $_failed = FALSE;
-		/**
-		 * @var resource A reference to the mysql result returned by a query that this client has performed
+
+        /**
+		 * @var Mysqli_result resource A reference to the mysql result returned by a query that this client has performed
 		 */
 		protected $_result = FALSE;
 
@@ -225,12 +229,13 @@
 		 */
 		public function __construct( $server )
 		{
-
 			if ( !is_string( $server ) )
 			{
 				return FALSE;
 			}
 			$this->_server = $server;
+
+            return TRUE;
 		}
 
 		/**
@@ -412,7 +417,7 @@
 		 * If you pass it anything else, it'll return FALSE
 		 *
 		 * @param SphinxQL|NULL
-		 * @return SphinxQL_Query|SphinxQL|FALSE $this or $this->_sphinx or error
+		 * @return SphinxQL_Query|SphinxQL|bool $this or $this->_sphinx or error
 		 */
 		public function sphinx( $sphinx = NULL )
 		{
@@ -448,8 +453,9 @@
 			{
 				if ( !isset( $field['field'] ) OR !is_string( $field['field'] ) )
 				{
-					next;
+					continue;
 				}
+
 				if ( isset( $field['alias'] ) AND is_string( $field['alias'] ) )
 				{
 					$fields[] = sprintf( "%s AS %s", $field['field'], $field['alias'] );
@@ -518,7 +524,7 @@
 		/**
 		 * Adds an entry to the list of indexes to be searched.
 		 *
-		 * @param string The index to add
+		 * @param string $index The index to add
 		 *
 		 * @return SphinxQL_Query $this
 		 */
@@ -536,7 +542,7 @@
 		/**
 		 * Removes an entry from the list of indexes to be searched.
 		 *
-		 * @param string The index to remove
+		 * @param string $index The index to remove
 		 *
 		 * @return SphinxQL_Query $this
 		 */
@@ -557,8 +563,8 @@
 		/**
 		 * Adds a entry to the list of fields to return from the query.
 		 *
-		 * @param string Field to add
-		 * @param string Alias for that field, optional
+		 * @param string $field Field to add
+		 * @param string $alias Alias for that field, optional
 		 *
 		 * @return SphinxQL_Query $this
 		 */
@@ -612,7 +618,7 @@
 		/**
 		 * Removes a field from the list of fields to search.
 		 *
-		 * @param string Alias of the field to remove
+		 * @param string $alias Alias of the field to remove
 		 *
 		 * @return SphinxQL_Query $this
 		 */
@@ -650,7 +656,7 @@
 		/**
 		 * Sets the text to be matched against the index(es)
 		 *
-		 * @param string Text to be searched
+		 * @param string $search Text to be searched
 		 *
 		 * @return SphinxQL_Query $this
 		 */
@@ -681,7 +687,7 @@
 		/**
 		 * Sets the offset for the query
 		 *
-		 * @param integer Offset
+		 * @param integer $offset
 		 *
 		 * @return SphinxQL_Query $this
 		 */
@@ -699,7 +705,7 @@
 		/**
 		 * Sets the limit for the query
 		 *
-		 * @param integer Limit
+		 * @param integer $limit
 		 *
 		 * @return SphinxQL_Query $this
 		 */
@@ -717,10 +723,10 @@
 		/**
 		 * Adds a WHERE condition to the query.
 		 *
-		 * @param string The field/expression for the condition
-		 * @param string The field/expression/value to compare the field to
-		 * @param string The operator (=, <, >, etc)
-		 * @param bool Whether or not to quote the value, defaults to TRUE
+		 * @param string $field     The field/expression for the condition
+		 * @param string $value     The field/expression/value to compare the field to
+		 * @param string $operator  The operator (=, <, >, etc)
+		 * @param bool   $quote     Whether or not to quote the value, defaults to TRUE
 		 *
 		 * @return SphinxQL_Query $this
 		 */
@@ -750,9 +756,9 @@
 		/**
 		 * Adds a WHERE <field> <not> IN (<value x>, <value y>, <value ...>) condition to the query, mainly used for MVAs.
 		 *
-		 * @param string The field/expression for the condition
-		 * @param array  The values to compare the field to
-		 * @param string Whether this is a match-all, match-any (default) or match-none condition
+		 * @param string $field  The field/expression for the condition
+		 * @param array  $values The values to compare the field to
+		 * @param string $how   Whether this is a match-all, match-any (default) or match-none condition
 		 *
 		 * @return SphinxQL_Query $this
 		 */
@@ -789,7 +795,7 @@
 		/**
 		 * Sets the GROUP BY condition for the query.
 		 *
-		 * @param string The field/expression for the condition
+		 * @param string $field The field/expression for the condition
 		 *
 		 * @return SphinxQL_Query $this
 		 */
@@ -807,8 +813,7 @@
 		/**
 		 * Removes the GROUP BY condition from the query.
 		 *
-		 * @param string The field/expression for the condition
-		 * @param string The alias for the result set (optional)
+		 * @param string $field The field/expression for the condition
 		 *
 		 * @return SphinxQL_Query $this
 		 */
@@ -824,8 +829,8 @@
 		/**
 		 * Adds an ORDER condition to the query.
 		 *
-		 * @param string The field/expression for the condition
-		 * @param string The sort type (can be 'asc' or 'desc', capitals are also OK)
+		 * @param string $field The field/expression for the condition
+		 * @param string $sort  The sort type (can be 'asc' or 'desc', capitals are also OK)
 		 *
 		 * @return SphinxQL_Query $this
 		 */
@@ -844,8 +849,8 @@
 		 * Sets the WITHIN GROUP ORDER BY condition for the query. This is a
 		 * Sphinx-specific extension to SQL.
 		 *
-		 * @param string The field/expression for the condition
-		 * @param string The sort type (can be 'asc' or 'desc', capitals are also OK)
+		 * @param string $field The field/expression for the condition
+		 * @param string $sort  The sort type (can be 'asc' or 'desc', capitals are also OK)
 		 *
 		 * @return SphinxQL_Query $this
 		 */
