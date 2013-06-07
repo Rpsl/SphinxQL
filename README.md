@@ -1,7 +1,7 @@
 SphinxQL
 ========
 
-A library for work with [Spinx](http://sphinxsearch.com/) QL Api ( uses mysqli php extension
+A library for work with [Spinx](http://sphinxsearch.com/) QL Api ( uses mysqli php extension )
 
 ##### Example
 
