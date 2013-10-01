@@ -15,10 +15,5 @@
         "psr-0": {
             "Rpsl\\SphinxQL": "src/"
         }
-    },
-    "extra": {
-        "branch-alias": {
-            "dev-master": "master"
-        }
     }
 }
