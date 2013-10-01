@@ -1,5 +1,5 @@
 {
-    "name": "Rpsl/SphinxQL",
+    "name": "rpsl/sphinxql",
     "description": "Simple library for work with SphinxQL Api ( uses mysqli php extension )",
     "keywords": ["sphinx", "sphinxql", "mysql", "search", "sql", "database"],
     "require": {
