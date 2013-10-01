@@ -1,6 +1,6 @@
 <?php
 
-	namespace Sphinx;
+    namespace Rpsl\SphinxQL;
 
     /*
             Read Documentation, Luke.
@@ -39,8 +39,7 @@
             $result = $sphinxql->query('INSERT INTO realtime_index (id, title, content) VALUES ( 1, "title news", "content news" )');
 
 
-            @todo Нужно отрефакторить на вопрос работы с несколькими соединениями
-                и выкидывания различных Exception`ов при неправильном запросе.
+            @todo refactoring for multy connections
      */
 
 
@@ -943,6 +942,7 @@
 
             if( $dump )
             {
+	            // @todo remove this
                 if( function_exists('d') )
                 {
                     d( (string) $this );

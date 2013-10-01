@@ -1,7 +1,7 @@
 SphinxQL
 ========
 
-A library for work with [SphinxQL](http://sphinxsearch.com/) Api ( uses mysqli php extension )
+Simple library for work with [SphinxQL](http://sphinxsearch.com/) Api ( uses mysqli php extension )
 
 See [SphinxQL specification](http://sphinxsearch.com/docs/current.html#sphinxql-reference)
 
