@@ -1,5 +1,7 @@
 <?php
 
+	namespace Sphinx;
+
     /*
             Read Documentation, Luke.
 
@@ -55,13 +57,13 @@
          *
          * @param array $servers ( array( 'alias' => '127.0.0.1:9306' ) )
          *
-         * @throws Exception
+         * @throws \Exception
          */
         public function __construct( array $servers )
         {
             if( empty( $servers ) )
             {
-                throw new Exception('Wrong usage sphinx :: invalid config');
+                throw new \Exception('Wrong usage sphinx :: invalid config');
             }
 
             foreach( $servers as $k => $v )
@@ -132,9 +134,7 @@
             }
             while ( ( $names = array_keys( self::$_handles ) ) && count( $names ) && ( $name = $names[intval( rand( 0, count( $names ) - 1 ) )] ) )
             {
-                /**
-                 * @var mysqli
-                 */
+                /** @var \mysqli $client */
                 $client = self::$_handles[$name];
 
                 try
@@ -209,7 +209,7 @@
          */
         protected $_server = FALSE;
         /**
-         * @var Mysqli ( resource A reference to the mysql link that this client will be using )
+         * @var \Mysqli ( resource A reference to the mysql link that this client will be using )
          */
         protected $_handle = FALSE;
         /**
@@ -218,7 +218,7 @@
         protected $_failed = FALSE;
 
         /**
-         * @var Mysqli_result resource A reference to the mysql result returned by a query that this client has performed
+         * @var \Mysqli_result resource A reference to the mysql result returned by a query that this client has performed
          */
         protected $_result = FALSE;
 
@@ -263,9 +263,9 @@
             try
             {
                 $tmp = explode( ':', $this->_server );
-                $this->_handle = new mysqli( $tmp[0], '', '', '', $tmp[1] );
+                $this->_handle = new \mysqli( $tmp[0], '', '', '', $tmp[1] );
             }
-            catch ( Exception $e )
+            catch ( \Exception $e )
             {
                 $this->_failed = TRUE;
                 throw new SphinxqlConnectException($e->getMessage());
@@ -958,7 +958,7 @@
 
     }
 
-    class SphinxqlConnectException extends Exception{
+    class SphinxqlConnectException extends \Exception{
 
         public function __construct($message)
         {
@@ -966,7 +966,7 @@
         }
     }
 
-    class SphinxqlQueryException extends Exception{
+    class SphinxqlQueryException extends \Exception{
 
         public function __construct($message)
         {
