@@ -69,3 +69,12 @@ $result = $sphinxql->query('
     '
 );
 ```
+
+##### Install with composer:
+```json
+{
+    "require": {
+        "rpsl/sphinxql": ">=1"
+    }
+}
+```
