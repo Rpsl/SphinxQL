@@ -10,7 +10,7 @@
     },
     "homepage": "https://github.com/Rpsl/SphinxQL",
     "authors": [{"name": "Rpsl", "email": "gmail@rpsl.info"}],
-
+    "license": "Apache-2.0",
     "autoload": {
         "psr-0": {
             "Rpsl\\SphinxQL": "src/"
