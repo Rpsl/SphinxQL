@@ -106,7 +106,6 @@
          */
         public function newQuery()
         {
-
             if ( $query = new SphinxQL_Query( $this ) )
             {
                 return $query;
@@ -127,7 +126,7 @@
          */
         public function query( $query )
         {
-            if ( !is_a( $query, 'SphinxQL_Query', FALSE ) && !is_string( $query ) )
+            if ( !is_a( $query, 'Rpsl\SphinxQL\SphinxQL_Query', FALSE ) && !is_string( $query ) )
             {
                 return FALSE;
             }
@@ -420,8 +419,7 @@
          */
         public function sphinx( $sphinx = NULL )
         {
-
-            if ( is_a( $sphinx, 'SphinxQL', FALSE ) )
+            if ( is_a( $sphinx, 'Rpsl\SphinxQL\SphinxQL', FALSE ) )
             {
                 $this->_sphinx = $sphinx;
                 return $this;
@@ -942,7 +940,7 @@
 
             if( $dump )
             {
-	            // @todo remove this
+                // @todo remove this
                 if( function_exists('d') )
                 {
                     d( (string) $this );
